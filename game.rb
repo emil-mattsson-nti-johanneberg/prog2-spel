@@ -1,5 +1,26 @@
 require 'gosu'
 
+class Ball
+    def initialize
+        @image = Gosu::Image.new("media/ball.png")
+        @image_width = 15
+        @image_height = 15
+        @vel_x = 5
+        @vel_y = 5
+        @x = 300
+        @y = 33
+    end
+
+    def update
+        @y += @vel_y
+        @x += @vel_x
+    end
+
+    def draw
+        @image.draw(@x, @y,0)
+    end
+end
+
 class Player
     def initialize
         @x = 320
@@ -24,6 +45,7 @@ class Game < Gosu::Window
         super 640, 480
         self.caption = "Game"
         @player = Player.new
+        @ball = Ball.new
     end
 
     def update
@@ -36,6 +58,7 @@ class Game < Gosu::Window
     end
 
     def draw
+        @ball.draw
         @player.draw
     end
 
