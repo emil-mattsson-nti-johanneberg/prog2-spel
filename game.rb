@@ -132,7 +132,7 @@ class Game < Gosu::Window
         end
 
         if @ball.y > 640 and button_down? Gosu::KB_SPACE
-            @lifes =- 1
+            @lifes -= 1
             @ball.reset
             @player.reset
         end
