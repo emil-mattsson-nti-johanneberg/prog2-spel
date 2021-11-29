@@ -4,29 +4,8 @@ module ZOrder
     BACKGROUND, STARS, PLAYER, UI = *0..3
 end
 
- class Entitet
-    attr_accessor :x, :y
-    def initialize
-        @x = x 
-        @y = y 
-    end
-
-    def collides? ball
-        if y == samma
-            if x överlappar
-
-            end
-        end
-        @aux = ball.x < @x+width && ball.x+ball.width > @x && ball.y < @y+height && ball.y+ball.height > @y
-        if @aux
-          ball.vy = -ball.vy
-        end
-         
-        return @aux
-    end
-end
-
 class Brick
+    attr_reader :x, :y
     def initialize
         @image = Gosu::Image.new("media/brick.png")
     end
@@ -103,20 +82,28 @@ class Game < Gosu::Window
     def initialize 
         super 640, 480
         self.caption = "Game"
+        skapa_brick
         @player = Player.new
         @ball = Ball.new
         @font = Gosu::Font.new(20)
         @lifes = 3
     end
 
+    def skapa_brick
+        @brick = []
+        8.times { |i| @brick.push(Brick.new(82,80))}
+    end
+
     def draw
         @ball.draw
         @player.draw
         @font.draw_text("LIFES: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
+        @brick.each { |brick| brick.draw }
     end
 
     def update
         @ball.update
+        @brick.update
         if Gosu.button_down? Gosu::KB_LEFT or Gosu::button_down? Gosu::GP_LEFT
             @player.move_left
         end
