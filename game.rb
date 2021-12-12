@@ -5,18 +5,57 @@ module ZOrder
 end
 
 class Brick
-    attr_reader :x, :y
-    def initialize
-        @image = Gosu::Image.new("media/brick.png")
+    attr_reader :x, :y, :typ
+    def initialize(x, y, typ)
+        @x = x 
+        @y = y
+        @typ = typ
     end
 
-    def draw
-        @image.draw(@x, @y, 0)
+    def x1
+        40 * x + 1
+    end
+    
+    def x2
+        40 * (x+1) - 1
+    end
+    
+    def y1
+        20 * y + 1
+    end
+    
+    def y2
+        20 * (y+1) - 1
+    end
+    
+    def color
+        case typ
+        when :aqua
+          Gosu::Color::AQUA
+        when :red
+          Gosu::Color::RED
+        when :green
+          Gosu::Color::GREEN
+        when :blue
+          Gosu::Color::BLUE
+        when :yellow
+          Gosu::Color::YELLOW
+        when :fuchsia
+          Gosu::Color::FUCHSIA
+        when :cyan
+          Gosu::Color::CYAN
+        when :gray
+          Gosu::Color::GRAY
+        else raise
+        end
+    end
+
+    def draw(window)
+        window.draw_quad(x1, y1, color, x2, y1, color, x2, y2, color, x1, y2, color)
     end
 end
 
 class Ball
-
     attr_accessor :vel_y, :vel_x, :y, :x
     attr_reader :lifes
     def initialize
@@ -82,28 +121,28 @@ class Game < Gosu::Window
     def initialize 
         super 640, 480
         self.caption = "Game"
-        skapa_brick
         @player = Player.new
         @ball = Ball.new
         @font = Gosu::Font.new(20)
         @lifes = 3
-    end
-
-    def skapa_brick
-        @brick = []
-        8.times { |i| @brick.push(Brick.new(82,80))}
+        @bricks = [:gray, :red, :green, :blue, :yellow, :fuchsia, :cyan, :gray].each_with_index.flat_map do |color, i|
+            16.times.map do |j|
+              Brick.new(j, i+4, color)
+            end
+        end
     end
 
     def draw
         @ball.draw
         @player.draw
         @font.draw_text("LIFES: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
-        @brick.each { |brick| brick.draw }
+        @bricks.each do |brick|
+            brick.draw(self)
+        end
     end
 
     def update
         @ball.update
-        @brick.update
         if Gosu.button_down? Gosu::KB_LEFT or Gosu::button_down? Gosu::GP_LEFT
             @player.move_left
         end
