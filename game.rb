@@ -15,19 +15,23 @@ class Brick
     def x1
         40 * x + 1
     end
-    
     def x2
         40 * (x+1) - 1
     end
-    
     def y1
         20 * y + 1
     end
-    
     def y2
         20 * (y+1) - 1
     end
     
+    def contains?(ball)
+        @ball.x >= x1 && @ball.x <= x2 && @ball.y >= y1 && @ball.y <= y2
+    end
+    
+    def hit!
+        @destroyed = true
+    end
     def color
         case typ
         when :aqua
@@ -56,7 +60,7 @@ class Brick
 end
 
 class Ball
-    attr_accessor :vel_y, :vel_x, :y, :x
+    attr_accessor :vel_y, :vel_x, :y, :x, :blocks
     attr_reader :lifes
     def initialize
         @image = Gosu::Image.new("media/ball.png")
@@ -67,6 +71,7 @@ class Ball
         @x = 300
         @y = 390
         @lifes = 3
+        @blocks = blocks
     end
 
     def reset 
@@ -83,9 +88,32 @@ class Ball
         if @y < 0
             @vel_y *= -1
         end
-
         @y += @vel_y
         @x += @vel_x
+
+        old_x = @x
+        old_y = @y
+
+        @blocks.each do |block|
+            if block.contains?(self)
+                block.hit!
+                if old_y < block.y1
+                    @y -= (@y - block.y1)
+                    @vel_y *= -1
+                elsif old_y > block.y2
+                    @y += (block.y2 - @y)
+                    @vel_y *= -1
+                elsif old_x < block.x1
+                    @x -= (@x - block.x1)
+                    @vel_x *= -1
+                elsif old_x > block.x2
+                    @x += (block.x2 - @x)
+                    @vel_x *= -1
+                else
+                    raise
+                end
+            end       
+        end
     end
 
     def draw
