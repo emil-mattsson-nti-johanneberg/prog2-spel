@@ -19,6 +19,16 @@ class Entitet
     def draw
       @sprite.draw x, y, 0
     end
+
+    def collides? (ball)
+        @aux = ball.x < @x+width && ball.x+ball.width > @x && ball.y < @y+height && ball.y+ball.height > @y
+        if @aux
+          ball.vel_y = -ball.vel_y
+        end
+           
+        return @aux
+    end
+
 end
 
 module ZOrder
@@ -28,7 +38,7 @@ end
 class Brick < Entitet
     attr_reader :x, :y
     def initialize(window,x,y)
-        @image = Gosu::Image.new(window, "media/brick.png", true)
+        @image = Gosu::Image.new(window, "media/block.png", true)
         super x, y, @image
     end
     def draw
@@ -37,64 +47,61 @@ class Brick < Entitet
 end
 
 class Ball < Entitet
-    attr_accessor :vel_y, :vel_x, :y, :x
-    attr_reader :lifes
-    def initialize
-        @image = Gosu::Image.new("media/ball.png")
-        @image_width = 15
-        @image_height = 15
-        @vel_x = 5
-        @vel_y = 5
-        @x = 300
-        @y = 390
-        @lifes = 3
+    attr_accessor :vel_y, :vel_x
+    attr_reader :lifes, :score
+    def initialize x, y, window
+        @window = window
+        @image = Gosu::Image.new(window, "media/ball.png", true)
+        super x, y-25, @image
+        @vel_x = @vel_y = -2
+        @score = 0
     end
 
-    def reset 
-        @x = 300
-        @y = 390
-        @vel_x = 5
-        @vel_y = 5
+    def reset x, y 
+        @x = x
+        @y = y-25
+        @vel_x = @vel_x * -0.75
+        @vel_y = @vel_y * -0.75
     end
 
     def update
-        if @x + @image_width >= 640 || @x < 0
-            @vel_x *= -1
-        end
-        if @y < 0
-            @vel_y *= -1
-        end
-        @y += @vel_y
         @x += @vel_x
+        @y += @vel_y
 
+        if @x < 0 || @x > @window.width-width
+            @vel_x = -@vel_x
+        end
+
+        if @y < 0 
+            @vel_y = -@vel_y
+        end
     end
 
-    def draw
-        @image.draw(@x, @y,0)
+    def collect_blocks(bricks)
+        bricks.reject! do |brick| 
+          if brick.collides? (self)
+            @score += 100 
+          end
+        end
     end
 end
 
 class Player < Entitet
     attr_accessor :x, :lifes
-    def initialize
-        @x = 320
-        @image = Gosu::Image.new("media/paddle.png")
+    def initialize x, y, window
+        @image = Gosu::Image.new(window, "media/paddle.png", true)
+        super x, y, @image
         @lifes = 3
+        @score = 0
     end
-    def reset
-        @x = 320
-        @y = 420    
+    def draw
+        @image.draw_rot(@x, 420)
     end
     def move_left
         @x -= 5
     end
-
     def move_right
         @x += 5
-    end
-
-    def draw
-        @image.draw_rot(@x, 420)
     end
 end
 
@@ -103,8 +110,8 @@ class Game < Gosu::Window
         super 640, 480, false
         self.caption = "Game"
         create_blocks
-        @player = Player.new
-        @ball = Ball.new
+        @player = Player.new(330, 450, self)
+        @ball = Ball.new(320, 420, self)
         @font = Gosu::Font.new(20)
         @lifes = 3
     end
@@ -120,13 +127,15 @@ class Game < Gosu::Window
 
     def draw
         @ball.draw
-        @player.draw
         @blocks.each { |block| block.draw }
+        @player.draw
         @font.draw_text("LIFES: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
+        @font.draw_text("SCORE: #{@ball.score}", 10, 30, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
     end
 
     def update
         @ball.update
+        @ball.collect_blocks(@blocks)
         if Gosu.button_down? Gosu::KB_LEFT or Gosu::button_down? Gosu::GP_LEFT
             @player.move_left
         end
@@ -140,6 +149,16 @@ class Game < Gosu::Window
                 @ball.vel_y *= 1.1
             end
         end
+
+        #if @player.collides?(@ball)
+     # @ball.vel_x *= 1.1
+      #@ball.vel_y *= 1.1
+      #if @blocks.length == 0
+        #create_blocks
+        #@ball.vel_x *= 1.25
+        #@ball.vel_y *= 1.25
+      #end
+    #end
 
         if @ball.y > 640 and button_down? Gosu::KB_SPACE
             @lifes -= 1
