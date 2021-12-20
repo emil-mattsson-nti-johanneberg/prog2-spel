@@ -119,14 +119,6 @@ class Game < Gosu::Window
         8.times { |i| @blocks.push(Brick.new(self, 82*i,170)) }
     end
 
-    def draw
-        @ball.draw
-        @blocks.each { |block| block.draw }
-        @player.draw
-        @font.draw_text("LIFE: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
-        @font.draw_text("SCORE: #{@ball.score}", 10, 30, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
-    end
-
     def update
         @ball.update
         @ball.collect_blocks(@blocks)
@@ -137,7 +129,6 @@ class Game < Gosu::Window
         if Gosu.button_down? Gosu::KB_RIGHT or Gosu::button_down? Gosu::GP_RIGHT
             @player.move_right
         end
-
         if @player.collides?(@ball)
             @ball.vel_x *= 1.05
             @ball.vel_y *= 1.05
@@ -147,10 +138,21 @@ class Game < Gosu::Window
                 @ball.vel_y *= 1.1
             end
         end
-
         if @ball.y > 640 and button_down? Gosu::KB_SPACE
             @lifes -= 1
             @ball.reset @player.x, @player.y 
+        end
+    end
+    def draw
+        @ball.draw
+        @blocks.each { |block| block.draw }
+        @player.draw
+        @font.draw_text("LIFE: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
+        @font.draw_text("SCORE: #{@ball.score}", 10, 30, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
+        if @lifes == 0
+            @font.draw_text("GAME OVER YOU GOT: #{@ball.score}", 90, 240, ZOrder::UI, 2.0, 2.0, Gosu::Color::YELLOW)
+            @ball.vel_x = 0
+            @ball.vel_y = 0
         end
     end
     def button_down(id)
