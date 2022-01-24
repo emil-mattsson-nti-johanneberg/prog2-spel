@@ -48,7 +48,7 @@ class Ball < Entitet
         @window = window
         @image = Gosu::Image.new(window, "media/ball.png", true)
         super x, y-25, @image
-        @vel_x = @vel_y = -2
+        @vel_x = @vel_y = -3
         @score = 0
     end
 
