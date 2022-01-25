@@ -30,6 +30,19 @@ module ZOrder
     BACKGROUND, STARS, PLAYER, UI = *0..3
 end
 
+class Trait < Entitet
+    def initialize x, y, window
+        @image = Gosu::Image.new(window, "media/red_col.png", true)
+        super x, y, @image
+    end
+    def draw
+        @image.draw(@x, @y, 0)
+    end
+    def go_down 
+        @x = -3
+    end
+end
+
 class Brick < Entitet
     attr_reader :x, :y
     def initialize(window,x,y)
@@ -48,7 +61,7 @@ class Ball < Entitet
         @window = window
         @image = Gosu::Image.new(window, "media/ball.png", true)
         super x, y-25, @image
-        @vel_x = @vel_y = -3
+        @vel_x = @vel_y = -5
         @score = 0
     end
 
@@ -71,7 +84,6 @@ class Ball < Entitet
             @vel_y = -@vel_y
         end
     end
-
     def collect_blocks(bricks)
         bricks.reject! do |brick| 
           if brick.collides? (self)
@@ -93,10 +105,10 @@ class Player < Entitet
         @image.draw(@x, @y, 0)
     end
     def move_left
-        @x -= 5
+        @x -= 10
     end
     def move_right
-        @x += 5
+        @x += 10
     end
 end
 
@@ -108,6 +120,7 @@ class Game < Gosu::Window
         @player = Player.new(330, 450, self)
         @ball = Ball.new(320, 420, self)
         @font = Gosu::Font.new(20)
+        @trait = Trait.new(320, 240, self)
         @lifes = 3
     end
 
@@ -122,6 +135,7 @@ class Game < Gosu::Window
     def update
         @ball.update
         @ball.collect_blocks(@blocks)
+        #@trait.update
 
         if Gosu.button_down? Gosu::KB_LEFT or Gosu::button_down? Gosu::GP_LEFT
             @player.move_left
@@ -129,6 +143,9 @@ class Game < Gosu::Window
         if Gosu.button_down? Gosu::KB_RIGHT or Gosu::button_down? Gosu::GP_RIGHT
             @player.move_right
         end
+        #if @blocks.length == 16
+         #   @trait.go_down
+        #end
         if @player.collides?(@ball)
             @ball.vel_x *= 1.05
             @ball.vel_y *= 1.05
