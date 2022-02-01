@@ -34,12 +34,20 @@ class Trait < Entitet
     def initialize x, y, window
         @image = Gosu::Image.new(window, "media/red_col.png", true)
         super x, y, @image
+        @vel = 0
     end
     def draw
         @image.draw(@x, @y, 0)
     end
+    def update
+        @y += @vel
+    end
     def go_down 
-        @x = -3
+        @y += 3
+    end
+    def stop
+        @x = 240
+        @y = 680
     end
 end
 
@@ -117,10 +125,10 @@ class Game < Gosu::Window
         super 640, 480, false
         self.caption = "Game"
         create_blocks
-        @player = Player.new(330, 450, self)
+        @player = Player.new(270, 450, self)
         @ball = Ball.new(320, 420, self)
         @font = Gosu::Font.new(20)
-        @trait = Trait.new(320, 240, self)
+        @trait = Trait.new(rand(100..540), -50, self)
         @lifes = 3
     end
 
@@ -135,17 +143,21 @@ class Game < Gosu::Window
     def update
         @ball.update
         @ball.collect_blocks(@blocks)
-        #@trait.update
-
+        @trait.update
         if Gosu.button_down? Gosu::KB_LEFT or Gosu::button_down? Gosu::GP_LEFT
             @player.move_left
         end
         if Gosu.button_down? Gosu::KB_RIGHT or Gosu::button_down? Gosu::GP_RIGHT
             @player.move_right
         end
-        #if @blocks.length == 16
-         #   @trait.go_down
-        #end
+        if @blocks.length < 16
+            @trait.go_down
+        end
+        if @trait.x.between?(@player.x-30, @player.x+100)
+            if @trait.y > 450
+                @trait.stop
+            end
+        end
         if @player.collides?(@ball)
             @ball.vel_x *= 1.05
             @ball.vel_y *= 1.05
@@ -161,6 +173,7 @@ class Game < Gosu::Window
         end
     end
     def draw
+        @trait.draw
         @ball.draw
         @blocks.each { |block| block.draw }
         @player.draw
