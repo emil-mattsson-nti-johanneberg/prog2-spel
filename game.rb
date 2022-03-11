@@ -14,7 +14,7 @@ class Game < Gosu::Window
         super 640, 480, false
         self.caption = "Game"
         create_blocks
-        @playerz = Playerz.new(270, 400)
+        #@playerz = Playerz.new(270, 400)
         @player = Player.new(270, 450, self)
         @ball = Ball.new(320, 420, self)
         @font = Gosu::Font.new(20)
@@ -68,7 +68,7 @@ class Game < Gosu::Window
         @ball.draw
         @blocks.each { |block| block.draw }
         @player.draw
-        @playerz.draw
+        #playerz.draw
         @font.draw_text("LIFE: #{@lifes}", 10, 10, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
         @font.draw_text("SCORE: #{@ball.score}", 10, 30, ZOrder::UI, 1.0, 1.0, Gosu::Color::YELLOW)
         if @lifes == 0
